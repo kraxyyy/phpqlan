@@ -3,9 +3,31 @@
 class QueryList {
 
     private $array;
+    private $toStringVariable;
 
     public function __construct($array) {
         $this->array = $array;
+        $this->toStringVariable = false;
+    }
+
+    public function setToStringFunction($function) {
+        $this->toStringVariable = $function;
+        return $this;
+    }
+
+    public function getToStringFunction() {
+        return $this->toStringVariable;
+    }
+
+    public function toString() {
+        if($this->toStringVariable === false)
+            return $this;
+
+        $this->forAll(function($item) {
+            $this->getToStringFunction()($item);
+        });
+
+        return $this;
     }
 
     public function toArray() {
@@ -20,7 +42,18 @@ class QueryList {
         for($i = 0; $i < sizeof($this->array); $i++)
             $function($this->array[$i]);
 
-        return new QueryList($this->array);
+        return $this;
+    }
+
+    public function subList($start, $end) {
+        $temp = [];
+
+        for($i = 0; $i < $this->getLength(); $i++)
+            if($i >= $start && $i < $end)
+                array_push($temp, $this->array[$i]);
+
+        $this->array = $temp;
+        return $this;
     }
 
     public function contains($function) {
@@ -28,6 +61,35 @@ class QueryList {
             if($function($item))
                 return true;
 
+        return false;
+    }
+
+    public function fastSearch($function) {
+        $amount = $this->getLength();
+
+        if($amount > 1) {
+
+            $amount /= 2;
+            $amount = round($amount);
+
+            $list = $this->subList(0, $amount);
+
+            foreach ($list as $item)
+                if($function($item))
+                    return $item;
+
+            $list = $this->subList($amount, $this->getLength());
+
+            foreach ($list as $item)
+                if($function($item))
+                    return $item;
+
+            return false;
+        }else{
+            foreach ($this->array as $item)
+                if ($function($item))
+                    return $item;
+        }
         return false;
     }
 
@@ -47,14 +109,14 @@ class QueryList {
             }
         }
 
-        return new QueryList($this->array);
+        return $this;
     }
 
     public function display($function) {
         foreach ($this->array as $item)
             echo $function($item) . '<br>';
 
-        return new QueryList($this->array);
+        return $this->array;
     }
 
     public function extract($function) {
@@ -63,35 +125,40 @@ class QueryList {
         foreach ($this->array as $item)
             array_push($temp, $function($item));
 
-        return new QueryList($temp);
+        $this->array = $temp;
+
+        return $this;
     }
 
     public function clear() {
-        return new QueryList([]);
+        $this->array =  [];
+        return $this;
     }
 
     public function add($item) {
         array_push($this->array, $item);
+        return $this;
     }
 
     public function shuffle() {
         shuffle($this->array);
-        return new QueryList($this->array);
+        return $this;
     }
 
     public function where($function) {
         $temp = [];
 
-        foreach ($this->array as $item) {
+        foreach ($this->array as $item)
             if($function($item))
                 array_push($temp, $item);
-        }
-        return new QueryList($temp);
+
+        $this->array = $temp;
+        return $this;
     }
 
     public function dump() {
         var_dump($this->array);
-        return new QueryList($this->array);
+        return $this;
     }
 
     public function take($amount) {
@@ -106,7 +173,9 @@ class QueryList {
             else
                 break;
         }
-        return new QueryList($temp);
+
+        $this->array = $temp;
+        return $this;
     }
 
     public function remove($function) {
@@ -116,7 +185,8 @@ class QueryList {
            if(!$function($item))
                array_push($temp, $item);
 
-        return new QueryList($temp);
+        $this->array = $temp;
+        return $this;
     }
 
     public function get($index) {
