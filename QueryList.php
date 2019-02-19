@@ -189,6 +189,11 @@ class QueryList {
         return $this;
     }
 
+    public function flip() {
+        array_reverse($this->array);
+        return $this;
+    }
+
     public function get($index) {
         if($index >= sizeof($this->array))
             return false;
@@ -197,10 +202,9 @@ class QueryList {
 
         foreach ($this->array as $item) {
             if($temp === $index)
-                return $index;
+                return $item;
             $temp++;
         }
-
         return false;
     }
 }
