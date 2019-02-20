@@ -1,7 +1,7 @@
 <?php
 
 spl_autoload_register(function ($class_name) {
-    $directories = ["database/", "infrastructure/", "infrastructure/attributes", "infrastructure/sources"];
+    $directories = ["", "/", "./"];
 
     foreach ($directories as $dir) {
         if(file_exists($dir . $class_name . '.php')) {
